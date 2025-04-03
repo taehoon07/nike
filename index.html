@@ -5,80 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>나이키 매장 검색</title>
     <style>
-        #map {
-            height: 500px;
-            width: 100%;
+        body {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-top: 5%;
+            font-family: 'Arial', sans-serif;
         }
-        #searchInput {
+        input, button {
             font-size: 1rem;
             padding: 10px;
-            width: 300px;
+            margin: 10px;
         }
-        #searchButton {
-            font-size: 1rem;
-            padding: 10px 20px;
+        button {
+            cursor: pointer;
+        }
+        #results {
+            margin-top: 20px;
+            text-align: left;
+            display: inline-block;
+        }
+        .store {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
         }
     </style>
 </head>
 <body>
     <h1>나이키 매장 검색기</h1>
-    <input type="text" id="searchInput" placeholder="도시 또는 지역명을 입력하세요">
-    <button id="searchButton">검색</button>
-    <div id="map"></div>
+    <p>도시명을 입력하세요 (예: 서울)</p>
+    <input type="text" id="locationInput" placeholder="예: 서울">
+    <button onclick="searchNikeStores()">검색</button>
+
+    <div id="results"></div>
 
     <script>
-        let map;
-        let service;
-        let infowindow;
+        function searchNikeStores() {
+            const location = document.getElementById("locationInput").value.trim();
+            const resultsDiv = document.getElementById("results");
 
-        function initMap() {
-            const seoul = new google.maps.LatLng(37.5665, 126.9780);
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: seoul,
-                zoom: 13,
-            });
-            infowindow = new google.maps.InfoWindow();
-        }
+            if (location !== "서울") {
+                resultsDiv.innerHTML = "<p>해당 지역의 매장을 찾을 수 없습니다.</p>";
+                return;
+            }
 
-        document.getElementById('searchButton').addEventListener('click', function() {
-            const location = document.getElementById('searchInput').value;
-            const geocoder = new google.maps.Geocoder();
-            geocoder.geocode({ 'address': location }, function(results, status) {
-                if (status === 'OK') {
-                    const userLocation = results[0].geometry.location;
-                    map.setCenter(userLocation);
-                    const request = {
-                        location: userLocation,
-                        radius: '5000',
-                        keyword: '나이키 매장',
-                    };
-                    service = new google.maps.places.PlacesService(map);
-                    service.nearbySearch(request, function(results, status) {
-                        if (status === google.maps.places.PlacesServiceStatus.OK) {
-                            results.forEach(function(place) {
-                                createMarker(place);
-                            });
-                        } else {
-                            alert('검색 결과가 없습니다.');
-                        }
-                    });
-                } else {
-                    alert('위치를 찾을 수 없습니다: ' + status);
+            const stores = [
+                {
+                    name: "나이키 강남 플래그십 스토어",
+                    address: "서울 강남구 강남대로 396",
+                    hours: "10:30 ~ 21:30"
+                },
+                {
+                    name: "나이키 명동점",
+                    address: "서울 중구 명동8길 25",
+                    hours: "11:00 ~ 21:00"
+                },
+                {
+                    name: "나이키 타임스퀘어점",
+                    address: "서울 영등포구 영중로 15",
+                    hours: "10:30 ~ 22:00"
+                },
+                {
+                    name: "나이키 롯데월드몰점",
+                    address: "서울 송파구 올림픽로 300",
+                    hours: "10:30 ~ 22:00"
+                },
+                {
+                    name: "나이키 홍대점",
+                    address: "서울 마포구 와우산로 70",
+                    hours: "11:00 ~ 21:30"
                 }
-            });
-        });
+            ];
 
-        function createMarker(place) {
-            const marker = new google.maps.Marker({
-                map: map,
-                position: place.geometry.location,
+            let resultText = "<h2>서울의 나이키 매장</h2>";
+            stores.forEach(store => {
+                resultText += `
+                    <div class="store">
+                        <strong>${store.name}</strong><br>
+                        위치: ${store.address}<br>
+                        영업시간: ${store.hours}
+                    </div>
+                `;
             });
-            google.maps.event.addListener(marker, 'click', function() {
-                infowindow.setContent(place.name);
-                infowindow.open(map, this);
-            });
+
+            resultsDiv.innerHTML = resultText;
         }
     </script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap"></script>
 </body>
 </html>
