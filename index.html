@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나이키 매장 검색</title>
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+        #searchInput {
+            font-size: 1rem;
+            padding: 10px;
+            width: 300px;
+        }
+        #searchButton {
+            font-size: 1rem;
+            padding: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>나이키 매장 검색기</h1>
+    <input type="text" id="searchInput" placeholder="도시 또는 지역명을 입력하세요">
+    <button id="searchButton">검색</button>
+    <div id="map"></div>
+
+    <script>
+        let map;
+        let service;
+        let infowindow;
+
+        function initMap() {
+            const seoul = new google.maps.LatLng(37.5665, 126.9780);
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: seoul,
+                zoom: 13,
+            });
+            infowindow = new google.maps.InfoWindow();
+        }
+
+        document.getElementById('searchButton').addEventListener('click', function() {
+            const location = document.getElementById('searchInput').value;
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ 'address': location }, function(results, status) {
+                if (status === 'OK') {
+                    const userLocation = results[0].geometry.location;
+                    map.setCenter(userLocation);
+                    const request = {
+                        location: userLocation,
+                        radius: '5000',
+                        keyword: '나이키 매장',
+                    };
+                    service = new google.maps.places.PlacesService(map);
+                    service.nearbySearch(request, function(results, status) {
+                        if (status === google.maps.places.PlacesServiceStatus.OK) {
+                            results.forEach(function(place) {
+                                createMarker(place);
+                            });
+                        } else {
+                            alert('검색 결과가 없습니다.');
+                        }
+                    });
+                } else {
+                    alert('위치를 찾을 수 없습니다: ' + status);
+                }
+            });
+        });
+
+        function createMarker(place) {
+            const marker = new google.maps.Marker({
+                map: map,
+                position: place.geometry.location,
+            });
+            google.maps.event.addListener(marker, 'click', function() {
+                infowindow.setContent(place.name);
+                infowindow.open(map, this);
+            });
+        }
+    </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap"></script>
+</body>
+</html>
